@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Invitación VIP-VALIENTE</title>
+  <meta name="description" content="Invitación web con cuenta regresiva, programa, mapa, galería y confirmación de asistencia." />
+  <meta property="og:title" content="¡Estás invitad@!" />
+  <meta property="og:description" content="Confirma tu asistencia y mira los detalles del evento." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/portada.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --brand:#6A1B9A;
+      --ink:#1f2937;
+      --paper:#fafafa;
+      --accent:#f59e0b;
+    }
+    html, body { scroll-behavior:smooth; }
+    .title-font{ font-family:'Playfair Display', serif; }
+    .ui-font{ font-family:'Poppins', system-ui, sans-serif; }
+    .fade-in { animation: fadeIn 0.9s ease-out both; }
+    .float-in { animation: floatIn 0.9s ease-out both; }
+    @keyframes fadeIn{ from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+    @keyframes floatIn{ from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+    .paper-bg{ background: radial-gradient(1000px 600px at 10% 10%, #ffffff 0, #f8f8fb 45%, #f3f4f6 100%) fixed; }
+    .glass{ backdrop-filter: blur(8px); background: rgba(255,255,255,0.7); }
+
+    /* Overlay inicial */
+    #overlay { transition: opacity 0.5s ease; }
+    #overlay.hide { opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body class="ui-font text-gray-700 paper-bg">
+
+  <!-- Overlay inicial para reproducir música -->
+  <div id="overlay" class="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center text-white">
+    <h1 class="text-3xl font-bold mb-6">Bienvenido al Aniversario Valiente</h1>
+    <button id="btnPlay" class="px-6 py-3 rounded-2xl bg-[var(--brand)] text-white text-lg hover:opacity-90 transition">
+      ▶️ Reproducir música y entrar
+    </button>
+  </div>
+
+  <!-- Config rápida del evento -->
+  <script>
+    const INVITACION = {
+      titulo: "Aniversario Valiente",
+      subtitulo: "¡Acompáñanos en este día especial que se cumple un año de estar cerca de Dios como célula!",
+      fechaISO: "2025-08-30T15:30:00-04:00",
+      ubicacion: {
+        nombre: "SALON DE EVENTOS JOE BANANA",
+        direccion: "Av. Landaeta esquina chaco Nro 1195, La Paz, Bolivia",
+        maps: "https://maps.app.goo.gl/q3NHCVskLHURwJZi6"
+      },
+      portada: { url: "assets/portada.jpg" },
+      galeria: ["assets/foto1.jpg","assets/foto2.jpg","assets/foto3.jpg","assets/foto4.jpg"],
+      programa: [
+        { hora: "15:30", titulo: "Recepción", detalle: "Bienvenida a todos los que seran parte" },
+        { hora: "16:00", titulo: "Introducción - Dinamica", detalle: "Empezamos con la tarde!!!" },
+        { hora: "16:30", titulo: "Predica", detalle: "" },
+        { hora: "17:45", titulo: "Adoracion", detalle: "Que el PADRE nos hable" },
+        { hora: "18:00", titulo: "Juegos y compartimiento", detalle: "SIN PELEAR!!! COMEMOS ALGO DELI!!" }
+      ],
+      contactoRSVP: { whatsapp: "+59178791595", mensaje: "Hola, confirmo mi asistencia para el aniversario de VALIENTE!!" },
+      musica: { url: "assets/musica.mp3", autoPlay: true }
+    };
+  </script>
+
+  <!-- Hero / Portada -->
+  <header class="relative min-h-[90vh] grid place-items-center overflow-hidden">
+    <div class="absolute inset-0">
+      <img id="heroImage" src="" alt="Portada" class="w-full h-full object-cover object-center"/>
+      <div class="absolute inset-0 bg-black/40"></div>
+    </div>
+
+    <div class="relative z-10 max-w-3xl mx-auto px-6 text-center text-white">
+      <p class="uppercase tracking-widest text-sm mb-3 fade-in">Invitación</p>
+      <h1 id="heroTitle" class="title-font text-4xl sm:text-6xl font-bold leading-tight float-in"></h1>
+      <p id="heroSubtitle" class="mt-4 text-lg sm:text-xl opacity-90 fade-in"></p>
+
+      <!-- Countdown -->
+      <div class="mt-8 grid grid-cols-4 gap-3 justify-center">
+        <div class="glass rounded-2xl p-3 sm:p-4">
+          <div id="dDias" class="text-3xl sm:text-4xl font-bold">0</div>
+          <div class="text-xs sm:text-sm">Días</div>
+        </div>
+        <div class="glass rounded-2xl p-3 sm:p-4">
+          <div id="dHoras" class="text-3xl sm:text-4xl font-bold">0</div>
+          <div class="text-xs sm:text-sm">Horas</div>
+        </div>
+        <div class="glass rounded-2xl p-3 sm:p-4">
+          <div id="dMin" class="text-3xl sm:text-4xl font-bold">0</div>
+          <div class="text-xs sm:text-sm">Min</div>
+        </div>
+        <div class="glass rounded-2xl p-3 sm:p-4">
+          <div id="dSeg" class="text-3xl sm:text-4xl font-bold">0</div>
+          <div class="text-xs sm:text-sm">Seg</div>
+        </div>
+      </div>
+
+      <div class="mt-8 flex flex-wrap gap-3 justify-center">
+        <a id="btnCalendar" href="#" target="_blank" class="rounded-2xl px-5 py-3 bg-[var(--brand)] text-white hover:opacity-90 transition">Agregar al Calendario</a>
+        <a id="btnRSVP" href="#rsvp" class="rounded-2xl px-5 py-3 bg-white/90 text-[var(--ink)] hover:bg-white transition">Confirmar asistencia</a>
+      </div>
+
+      <!-- Música -->
+      <audio id="bgMusic" src="" loop></audio>
+
+      <div class="mt-6 text-sm opacity-90">📍 <span id="locNombre"></span> • <span id="locDireccion"></span></div>
+      <div class="mt-2">
+        <a id="locLink" href="#" target="_blank" class="underline">Ver en Maps</a>
+      </div>
+    </div>
+
+    <!-- Ola decorativa -->
+    <svg class="absolute -bottom-0 left-0 right-0" viewBox="0 0 1440 220"><path fill="#fff" d="M0,256L48,250.7C96,245,192,235,288,208C384,181,480,139,576,138.7C672,139,768,181,864,197.3C960,213,1056,203,1152,170.7C1248,139,1344,85,1392,58.7L1440,32L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"/></svg>
+  </header>
+
+  <!-- Detalles principales -->
+  <section id="detalles" class="max-w-5xl mx-auto px-6 py-14">
+    <div class="grid md:grid-cols-2 gap-10 items-center">
+      <div class="order-2 md:order-1">
+        <h2 class="title-font text-3xl md:text-4xl font-bold text-[var(--ink)]">Detalles del evento</h2>
+        <p class="mt-3 text-gray-600">Te esperamos para celebrar juntos en una tarde inolvidable. Asegúrate de confirmar tu asistencia y guarda la fecha en tu calendario.</p>
+        <ul class="mt-6 space-y-3 text-gray-700">
+          <li>🗓 <b>Fecha:</b> <span id="fechaLegible"></span></li>
+          <li>⏰ <b>Hora:</b> <span id="horaLegible"></span></li>
+          <li>📍 <b>Lugar:</b> <span id="lugarLegible"></span></li>
+        </ul>
+        <div class="mt-6 flex gap-3">
+          <a id="btnICS" href="#" download="invitation.ics" class="rounded-2xl px-4 py-2 border border-gray-300 hover:bg-gray-50">Descargar .ics</a>
+          <a id="btnMap2" href="#" target="_blank" class="rounded-2xl px-4 py-2 bg-[var(--brand)] text-white hover:opacity-90">Cómo llegar</a>
+        </div>
+      </div>
+      <div class="order-1 md:order-2">
+        <div class="rounded-3xl overflow-hidden shadow-xl">
+          <iframe id="mapFrame" class="w-full h-72 md:h-96" style="border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Programa -->
+<section id="programa" class="bg-white py-14">
+  <div class="max-w-5xl mx-auto px-6">
+    <h2 class="title-font text-4xl md:text-5xl font-bold text-black text-center mb-10">Programa</h2>
+    <div id="timeline" class="grid gap-6">
+      <!-- Items generados por JS -->
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Timeline cards estilo León */
+  #timeline .timeline-item {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 1s ease-out;
+    font-family: 'Playfair Display', serif;
+    background: linear-gradient(135deg, #ffb800, #ff7f11, #6b3f0a);
+    color: #000000; /* Texto general blanco */
+    box-shadow: 0 0 20px rgba(255,184,0,0.5), 0 0 40px rgba(255,127,17,0.3);
+  }
+  #timeline .timeline-item.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  #timeline .timeline-item:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 0 30px rgba(255,184,0,0.8), 0 0 60px rgba(255,127,17,0.5);
+  }
+  .timeline-item .hora {
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: #000000; /* Hora en blanco */
+    text-shadow: 0 0 8px #ffd700;
+  }
+  .timeline-item .titulo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    color: #ffffff; /* Título en blanco */
+    text-shadow: 0 0 6px #ffa500;
+  }
+  .timeline-item .detalle {
+    font-size: 1.1rem;
+    color: #000000; /* Detalle en blanco */
+    text-shadow: 0 0 4px #ffe5b4;
+  }
+</style>
+
+
+<script>
+  // Generar timeline con animación temática León
+  const timeline = document.getElementById('timeline');
+  INVITACION.programa.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'timeline-item rounded-3xl p-6 shadow-lg';
+    div.innerHTML = `
+      <div class="hora">${item.hora}</div>
+      <div class="titulo">${item.titulo}</div>
+      <div class="detalle">${item.detalle}</div>
+    `;
+    timeline.appendChild(div);
+
+    // Animación con delay majestuoso
+    setTimeout(() => div.classList.add('show'), 500 * i);
+  });
+</script>
+
+
+
+
+  <!-- Galería -->
+  <section id="galeria" class="max-w-6xl mx-auto px-6 py-14">
+    <h2 class="title-font text-3xl md:text-4xl font-bold text-[var(--ink)] text-center">MOMENTOS JUNTOS</h2>
+    <div id="gridGaleria" class="mt-10 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3"></div>
+  </section>
+
+  <!-- RSVP -->
+  <section id="rsvp" class="max-w-3xl mx-auto px-6 py-14">
+    <h2 class="title-font text-3xl md:text-4xl font-bold text-[var(--ink)] text-center">Confirmar asistencia</h2>
+    <p class="mt-3 text-center text-gray-600">Envía tu confirmación por WhatsApp o completa el formulario.</p>
+
+    <div class="mt-8 grid md:grid-cols-2 gap-6">
+      <a id="btnWA" target="_blank" class="rounded-2xl px-5 py-4 bg-green-600 text-white text-center hover:opacity-90">Confirmar por WhatsApp</a>
+
+      <form class="bg-white rounded-3xl p-6 shadow space-y-4" onsubmit="event.preventDefault(); enviarDemo();">
+        <div class="grid grid-cols-1 gap-4">
+          <label class="text-sm">Nombre
+            <input id="fNombre" class="w-full mt-1 rounded-xl border px-3 py-2" required />
+          </label>
+          <label class="text-sm">N° de acompañantes
+            <input id="fAcomp" type="number" min="0" value="0" class="w-full mt-1 rounded-xl border px-3 py-2" required />
+          </label>
+          <label class="text-sm">Mensaje
+            <textarea id="fMsg" class="w-full mt-1 rounded-xl border px-3 py-2" rows="3" placeholder="¿Quieres dejarnos un mensaje? sacale una foto de esta parte y nos mandas al whatsapp. "></textarea>
+          </label>
+        </div>
+        <button class="rounded-2xl px-5 py-3 bg-[var(--brand)] text-white hover:opacity-90">Enviar</button>
+        <p id="demoOut" class="text-sm text-gray-500"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-10 text-center text-sm text-gray-500">
+    <p>Hecho con ❤️ | <a href="#" class="underline" id="footerTitulo">Invitación</a></p>
+  </footer>
+
+  <!-- JS -->
+  <script>
+    const $ = (sel)=>document.querySelector(sel);
+    const fmt2 = (n)=> String(n).padStart(2,'0');
+
+    function fechaLegible(date){
+      const d = new Date(date);
+      const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+      const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+      return `${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]} de ${d.getFullYear()}`;
+    }
+    function horaLegible(date){
+      const d = new Date(date);
+      let h = d.getHours();
+      const m = fmt2(d.getMinutes());
+      const suf = h>=12? 'p. m.' : 'a. m.';
+      h = h%12 || 12;
+      return `${h}:${m} ${suf}`;
+    }
+
+    function init(){
+      // Portada
+      $('#heroImage').src = INVITACION.portada.url;
+      $('#heroTitle').textContent = INVITACION.titulo;
+      $('#heroSubtitle').textContent = INVITACION.subtitulo;
+
+      // Ubicación
+      $('#locNombre').textContent = INVITACION.ubicacion.nombre;
+      $('#locDireccion').textContent = INVITACION.ubicacion.direccion;
+      $('#locLink').href = INVITACION.ubicacion.maps;
+      $('#btnMap2').href = INVITACION.ubicacion.maps;
+
+
+      // Iframe del mapa
+      $('#mapFrame').src = `https://www.google.com/maps?q=${encodeURIComponent(INVITACION.ubicacion.direccion)}&output=embed`;
+
+      // Fecha
+      $('#fechaLegible').textContent = fechaLegible(INVITACION.fechaISO);
+      $('#horaLegible').textContent = horaLegible(INVITACION.fechaISO);
+      $('#lugarLegible').textContent = `${INVITACION.ubicacion.nombre} – ${INVITACION.ubicacion.direccion}`;
+
+      // Galería
+      const grid = document.getElementById('gridGaleria');
+      INVITACION.galeria.forEach((src)=>{
+        const a = document.createElement('a');
+        a.href = src; a.target = '_blank';
+        a.className = 'block overflow-hidden rounded-2xl shadow hover:scale-[1.01] transition';
+        a.innerHTML = `<img src="${src}" alt="foto" class="w-full h-48 md:h-56 lg:h-64 object-cover"/>`;
+        grid.appendChild(a);
+      });
+
+      // WhatsApp RSVP
+      const wa = new URL(`https://wa.me/${INVITACION.contactoRSVP.whatsapp.replace(/[^\d]/g,'')}`);
+      wa.searchParams.set('text', INVITACION.contactoRSVP.mensaje);
+      $('#btnWA').href = wa.toString();
+
+      // Música
+      const audio = document.getElementById('bgMusic');
+      audio.src = INVITACION.musica.url;
+
+      // Overlay y botón Play
+      const overlay = document.getElementById('overlay');
+      const btnPlay = document.getElementById('btnPlay');
+      btnPlay.addEventListener('click', ()=>{
+        audio.play().catch(()=>{});
+        overlay.classList.add('hide');
+        tick(); setInterval(tick, 1000);
+      });
+
+      // Footer
+      document.getElementById('footerTitulo').textContent = INVITACION.titulo;
+    }
+
+    function tick(){
+      const t = new Date(INVITACION.fechaISO).getTime();
+      const now = Date.now();
+      let diff = Math.max(0, t - now);
+      const d = Math.floor(diff / (1000*60*60*24)); diff -= d*24*60*60*1000;
+      const h = Math.floor(diff / (1000*60*60)); diff -= h*60*60*1000;
+      const m = Math.floor(diff / (1000*60)); diff -= m*60*1000;
+      const s = Math.floor(diff / 1000);
+      document.getElementById('dDias').textContent = d;
+      document.getElementById('dHoras').textContent = fmt2(h);
+      document.getElementById('dMin').textContent = fmt2(m);
+      document.getElementById('dSeg').textContent = fmt2(s);
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    function enviarDemo(){
+      const nombre = document.getElementById('fNombre').value;
+      const acomp = document.getElementById('fAcomp').value;
+      const msg = document.getElementById('fMsg').value;
+      document.getElementById('demoOut').textContent = `Gracias ${nombre}, confirmaste ${acomp} acompañante(s). Mensaje: ${msg}`;
+    }
+  </script>
+</body>
+</html>
