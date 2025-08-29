@@ -323,6 +323,41 @@
 
       // Footer
       document.getElementById('footerTitulo').textContent = INVITACION.titulo;
+       // AGREGAR AL CALENDARIO
+      const btnCalendar = document.getElementById('btnCalendar');
+      const fecha = new Date(INVITACION.fechaISO);
+      function formatGoogleCal(date){
+        const y = date.getUTCFullYear();
+        const m = String(date.getUTCMonth()+1).padStart(2,'0');
+        const d = String(date.getUTCDate()).padStart(2,'0');
+        const h = String(date.getUTCHours()).padStart(2,'0');
+        const min = String(date.getUTCMinutes()).padStart(2,'0');
+        const s = String(date.getUTCSeconds()).padStart(2,'0');
+        return `${y}${m}${d}T${h}${min}${s}Z`;
+      }
+      const start = formatGoogleCal(fecha);
+      const endDate = new Date(fecha.getTime() + 2*60*60*1000); // evento 2 horas
+      const end = formatGoogleCal(endDate);
+      const gcalUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(INVITACION.titulo)}&dates=${start}/${end}&details=${encodeURIComponent(INVITACION.subtitulo)}&location=${encodeURIComponent(INVITACION.ubicacion.direccion)}`;
+      btnCalendar.href = gcalUrl;
+      btnCalendar.target = "_blank";
+      // DESCARGAR ARCHIVO .ICS
+      const btnICS = document.getElementById('btnICS');
+      function formatICS(date){
+        return date.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+      }
+      const icsContent = `BEGIN:VCALENDAR
+    VERSION:2.0
+    BEGIN:VEVENT
+    SUMMARY:${INVITACION.titulo}
+    DTSTART:${formatICS(fecha)}
+    DTEND:${formatICS(endDate)}
+    DESCRIPTION:${INVITACION.subtitulo}
+    LOCATION:${INVITACION.ubicacion.direccion}
+    END:VEVENT
+    END:VCALENDAR`;
+      btnICS.href = "data:text/calendar;charset=utf-8," + encodeURIComponent(icsContent);
+      btnICS.download = "invitacion.ics";
     }
 
     function tick(){
